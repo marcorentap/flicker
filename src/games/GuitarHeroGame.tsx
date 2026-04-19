@@ -29,13 +29,13 @@ interface State {
     noteIdCounter: number;
     timePlayed: number;
     lastH: number;
+    dead: boolean;
 }
 
 export function createGuitarHeroGame(
     _controlKey: string,
     baseColor: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _onGameOver: (score: number) => void,
+    onGameOver: (score: number) => void,
 ): GameInstance {
     const colorNum = hex(baseColor);
     const container = new Container();
@@ -44,7 +44,20 @@ export function createGuitarHeroGame(
     const trackGfx = new Graphics(); // track bg + edges, redrawn on resize
     const hitZoneGfx = new Graphics(); // hit zone, redrawn on flash change
     const notesGfx = new Graphics(); // all active notes, redrawn each frame
-    const hitParticles = new Container(); // short-lived hit animations
+    const hitParticles = new Container();
+
+    const gameOverBg = new Graphics();
+    const gameOverTitle = new Text({
+        text: "GAME OVER",
+        style: { fontFamily: "monospace", fontSize: 40, fill: colorNum, fontWeight: "bold" },
+    });
+    gameOverTitle.anchor.set(0.5);
+    const gameOverScore = new Text({
+        text: "",
+        style: { fontFamily: "monospace", fontSize: 22, fill: 0xe0e0e0 },
+    });
+    gameOverScore.anchor.set(0.5);
+    gameOverBg.visible = gameOverTitle.visible = gameOverScore.visible = false;
 
     const scoreText = new Text({
         text: "0",
@@ -75,6 +88,9 @@ export function createGuitarHeroGame(
         hitParticles,
         scoreText,
         comboText,
+        gameOverBg,
+        gameOverTitle,
+        gameOverScore,
     );
 
     const s: State = {
@@ -87,10 +103,12 @@ export function createGuitarHeroGame(
         noteIdCounter: 0,
         timePlayed: 0,
         lastH: 600,
+        dead: false,
     };
     let lastW = 0,
         lastH = 0;
     let lastHitFlash = -1;
+    let gameOverFired = false;
 
     function trackDims(W: number, H: number) {
         const trackW = Math.min(180, W * 0.28);
@@ -146,6 +164,11 @@ export function createGuitarHeroGame(
         drawTrack(W, H);
         drawHitZone(W, H, s.hitFlash > 0);
         scoreText.position.set(W - 20, 16);
+        if (gameOverTitle.visible) {
+            gameOverBg.clear().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.6 });
+            gameOverTitle.position.set(W / 2, H / 2 - 20);
+            gameOverScore.position.set(W / 2, H / 2 + 26);
+        }
     }
 
     function spawnHitParticle(W: number, H: number) {
@@ -170,7 +193,7 @@ export function createGuitarHeroGame(
             return s.score;
         },
         get dead() {
-            return false;
+            return s.dead;
         },
 
         triggerAction() {
@@ -202,6 +225,8 @@ export function createGuitarHeroGame(
             if (W !== lastW || H !== lastH) onResize(W, H);
             s.lastH = H;
 
+            if (s.dead) return;
+
             const speed = NOTE_FALL_SPEED + s.timePlayed * 2;
             const { trackW, trackX, hitZoneTop, hitZoneBot } = trackDims(W, H);
 
@@ -214,7 +239,18 @@ export function createGuitarHeroGame(
             for (const n of s.notes) {
                 if (!n.hit && !n.missed && n.y > hitZoneBot + NOTE_H) {
                     n.missed = true;
-                    s.combo = 0;
+                    s.dead = true;
+                    if (!gameOverFired) {
+                        gameOverFired = true;
+                        onGameOver(s.score);
+                    }
+                    gameOverBg.clear().rect(0, 0, W, H).fill({ color: 0x000000, alpha: 0.6 });
+                    gameOverBg.visible = true;
+                    gameOverTitle.position.set(W / 2, H / 2 - 20);
+                    gameOverTitle.visible = true;
+                    gameOverScore.text = `SCORE  ${s.score}`;
+                    gameOverScore.position.set(W / 2, H / 2 + 26);
+                    gameOverScore.visible = true;
                 }
             }
             s.notes = s.notes.filter((n) =>

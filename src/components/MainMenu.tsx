@@ -363,9 +363,18 @@ export function MainMenu({ onStart }: Props) {
                 START SESSION
             </button>
 
-            <div style={{ marginTop: 16, color: "#555", fontSize: 11 }}>
-                press key 1–{contexts.length} to control each context during
-                session · ESC to end
+            <div style={{
+                marginTop: 24,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 14,
+            }}>
+                <div style={{ display: "flex", gap: 28 }}>
+                    <ControlHint game="DINO RUNNER"   keys={["1–8"]}                    label="jump" />
+                    <ControlHint game="GUITAR HERO"   keys={["1–8"]}                    label="hit note" />
+                    <ControlHint game="SNAKE"         keys={["hold 1–8", "↑ ↓ ← →"]}   label="steer" />
+                </div>
             </div>
 
             <a
@@ -384,6 +393,30 @@ export function MainMenu({ onStart }: Props) {
     );
 }
 
+function ControlHint({ game, keys, label }: { game: string; keys: string[]; label: string }) {
+    return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            {game && <div style={{ color: "#888", fontSize: 12, letterSpacing: 3, fontWeight: "bold" }}>{game}</div>}
+            <div style={{ display: "flex", gap: 6 }}>
+                {keys.map((k) => (
+                    <span key={k} style={{
+                        background: "#13131e",
+                        border: "1px solid #2a2a38",
+                        borderRadius: 4,
+                        padding: "5px 14px",
+                        color: "#ccc",
+                        fontFamily: "monospace",
+                        fontSize: 15,
+                        fontWeight: "bold",
+                        letterSpacing: 1,
+                    }}>{k}</span>
+                ))}
+            </div>
+            <div style={{ color: "#888", fontSize: 12, letterSpacing: 3, fontWeight: "bold" }}>{label}</div>
+        </div>
+    );
+}
+
 function Label({
     children,
     small,
@@ -394,8 +427,9 @@ function Label({
     return (
         <div
             style={{
-                color: small ? "#666" : "#888",
-                fontSize: 10,
+                color: small ? "#888" : "#aaa",
+                fontSize: small ? 11 : 12,
+                fontWeight: "bold",
                 letterSpacing: 3,
                 marginBottom: small ? 0 : 14,
                 fontFamily: "monospace",

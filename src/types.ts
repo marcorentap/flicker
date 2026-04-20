@@ -1,4 +1,4 @@
-export type GameType = 'dino' | 'guitar-hero';
+export type GameType = 'dino' | 'guitar-hero' | 'snake';
 export type FlickerMode = 'cycle' | 'uniform-random';
 export type AppView = 'menu' | 'session' | 'results';
 

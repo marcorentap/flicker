@@ -20,6 +20,7 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
     const deadRef = useRef<Set<number>>(new Set());
     const endedRef = useRef(false);
     const gamesRef = useRef<Map<number, GameInstance>>(new Map());
+    const selectedCtxRef = useRef<number | null>(null);
 
     const endSession = useCallback(() => {
         if (endedRef.current) return;
@@ -107,13 +108,45 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
 
     // Key handler — synchronous ref reads, no stale closures
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => {
+        const ARROWS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+
+        const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") { endSession(); return; }
+
+            if (ARROWS.has(e.key)) {
+                e.preventDefault();
+                const selId = selectedCtxRef.current;
+                if (selId !== null) gamesRef.current.get(selId)?.arrowKey?.(e.key);
+                return;
+            }
+
             const ctx = config.contexts.find((c) => e.key === String(c.id));
-            if (ctx) gamesRef.current.get(ctx.id)?.triggerAction();
+            if (!ctx) return;
+            const game = gamesRef.current.get(ctx.id);
+            if (!game) return;
+
+            if (game.inputMode === 'selection') {
+                selectedCtxRef.current = ctx.id;
+            } else {
+                game.triggerAction();
+            }
         };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
+
+        const onKeyUp = (e: KeyboardEvent) => {
+            const ctx = config.contexts.find((c) => e.key === String(c.id));
+            if (!ctx) return;
+            const game = gamesRef.current.get(ctx.id);
+            if (game?.inputMode === 'selection' && selectedCtxRef.current === ctx.id) {
+                selectedCtxRef.current = null;
+            }
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+        };
     }, [endSession, config.contexts]);
 
     // Context switching — updates ref + React state + PIXI visibility in one shot
@@ -167,7 +200,7 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
                 padding: "0 18px", background: "#0c0c18", flexShrink: 0,
                 borderBottom: `1px solid ${colorAlpha(activeColor, 0.25)}`,
             }}>
-                <span style={{ color: "#666", fontSize: 10, letterSpacing: 3, marginRight: 4 }}>CTX</span>
+                <span style={{ color: "#888", fontSize: 11, letterSpacing: 3, fontWeight: "bold", marginRight: 4 }}>CTX</span>
 
                 {config.contexts.map((ctx, i) => {
                     const color = getContextColor(ctx.id);
@@ -193,7 +226,7 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
                                 {ctx.id}
                             </div>
                             <div>
-                                <div style={{ color: "#666", fontSize: 9, letterSpacing: 1 }}>
+                                <div style={{ color: "#888", fontSize: 10, letterSpacing: 2, fontWeight: "bold" }}>
                                     {GAME_NAMES[ctx.game].toUpperCase()}
                                 </div>
                                 <div style={{
@@ -208,15 +241,15 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
                 })}
 
                 <div style={{ flex: 1 }} />
-                <div style={{ color: "#666", fontSize: 10, letterSpacing: 1 }}>
+                <div style={{ color: "#888", fontSize: 11, letterSpacing: 2, fontWeight: "bold" }}>
                     {config.settings.frequencyHz}Hz · {config.settings.mode}
                 </div>
                 <button
                     onClick={endSession}
                     style={{
-                        background: "transparent", border: "1px solid #444", color: "#666",
+                        background: "transparent", border: "1px solid #555", color: "#888",
                         padding: "6px 14px", cursor: "pointer", fontFamily: "monospace",
-                        fontSize: 11, borderRadius: 4, letterSpacing: 2,
+                        fontSize: 11, fontWeight: "bold", borderRadius: 4, letterSpacing: 2,
                     }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#888"; (e.currentTarget as HTMLElement).style.color = "#aaa"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#444"; (e.currentTarget as HTMLElement).style.color = "#666"; }}

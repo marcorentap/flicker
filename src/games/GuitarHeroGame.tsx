@@ -196,6 +196,8 @@ export function createGuitarHeroGame(
             return s.dead;
         },
 
+        inputMode: 'action' as const,
+
         triggerAction() {
             const H = s.lastH;
             const W = lastW;

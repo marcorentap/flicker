@@ -102,6 +102,8 @@ export function createDinoGame(
     get score() { return s.score; },
     get dead() { return s.dead; },
 
+    inputMode: 'action' as const,
+
     triggerAction() {
       if (s.onGround && !s.dead) { s.vy = JUMP_VY; s.onGround = false; }
     },

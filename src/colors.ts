@@ -1,12 +1,12 @@
 export const CONTEXT_COLORS = [
-  '#FF4757', // 1: red
-  '#2ED573', // 2: green
-  '#1E90FF', // 3: blue
-  '#FFA502', // 4: orange
-  '#A855F7', // 5: purple
-  '#FF6EB4', // 6: pink
-  '#00D2D3', // 7: cyan
-  '#ECCC68', // 8: yellow
+  "#FF4757", // 1: red
+  "#2ED573", // 2: green
+  "#1E90FF", // 3: blue
+  "#FFA502", // 4: orange
+  "#A855F7", // 5: purple
+  "#FF6EB4", // 6: pink
+  "#00D2D3", // 7: cyan
+  "#ECCC68", // 8: yellow
 ];
 
 export function getContextColor(contextId: number): string {

@@ -1,9 +1,9 @@
-import type { Container } from 'pixi.js';
-import type { GameType } from '../types';
-import { createDinoGame } from './DinoGame';
-import { createGuitarHeroGame } from './GuitarHeroGame';
-import { createSnakeGame } from './SnakeGame';
-import { createTypingGame } from './TypingGame';
+import type { Container } from "pixi.js";
+import type { GameType } from "../types";
+import { createDinoGame } from "./DinoGame";
+import { createGuitarHeroGame } from "./GuitarHeroGame";
+import { createSnakeGame } from "./SnakeGame";
+import { createTypingGame } from "./TypingGame";
 
 export interface GameInstance {
   container: Container;
@@ -22,15 +22,15 @@ export type GameFactory = (
 ) => GameInstance;
 
 export const GAME_NAMES: Record<GameType, string> = {
-  dino: 'Dino Runner',
-  'guitar-hero': 'Guitar Hero',
-  snake: 'Snake',
-  typing: 'Z-Type',
+  dino: "Dino Runner",
+  "guitar-hero": "Guitar Hero",
+  snake: "Snake",
+  typing: "Z-Type",
 };
 
 export const GAME_FACTORIES: Record<GameType, GameFactory> = {
   dino: createDinoGame,
-  'guitar-hero': createGuitarHeroGame,
+  "guitar-hero": createGuitarHeroGame,
   snake: createSnakeGame,
   typing: createTypingGame,
 };

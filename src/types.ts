@@ -1,6 +1,6 @@
-export type GameType = 'dino' | 'guitar-hero' | 'snake' | 'typing';
-export type FlickerMode = 'cycle' | 'uniform-random';
-export type AppView = 'menu' | 'session' | 'results';
+export type GameType = "dino" | "guitar-hero" | "snake" | "typing";
+export type FlickerMode = "cycle" | "uniform-random";
+export type AppView = "menu" | "session" | "results";
 
 export interface ContextConfig {
   id: number;

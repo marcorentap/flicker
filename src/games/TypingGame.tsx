@@ -1,5 +1,4 @@
 import { Container, Graphics, Text } from 'pixi.js';
-// @ts-expect-error no bundled types
 import allWords from 'an-array-of-english-words';
 import type { GameInstance } from './index';
 

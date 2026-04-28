@@ -368,12 +368,15 @@ export function MainMenu({ onStart }: Props) {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 14,
+                gap: 16,
             }}>
+                <div style={{ color: "#444", fontSize: 11, letterSpacing: 3, fontWeight: "bold", margin: "8px 0" }}>
+                    PRESS A CONTEXT KEY TO ENTER A CONTEXT · ALL KEYS ROUTE TO THE ACTIVE CONTEXT
+                </div>
                 <div style={{ display: "flex", gap: 28 }}>
-                    <ControlHint game="DINO RUNNER"   keys={["1–8"]}                    label="jump" />
-                    <ControlHint game="GUITAR HERO"   keys={["1–8"]}                    label="hit note" />
-                    <ControlHint game="SNAKE"         keys={["hold 1–8", "↑ ↓ ← →"]}   label="steer" />
+                    <ControlHint game="DINO / GUITAR"  keys={["1–8"]}          label="enter · action" />
+                    <ControlHint game="SNAKE"           keys={["1–8", "↑↓←→"]} label="enter · steer" />
+                    <ControlHint game="Z-TYPE"          keys={["1–8", "a–z"]}   label="enter · shoot" />
                 </div>
             </div>
 

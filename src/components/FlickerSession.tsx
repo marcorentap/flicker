@@ -78,9 +78,13 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
                 gamesRef.current.set(ctxId, game);
             });
 
-            // Show first context
+            // Show first context and auto-enter it
             const first = config.contexts[activeIdxRef.current];
-            if (first) gamesRef.current.get(first.id)!.container.visible = true;
+            if (first) {
+                gamesRef.current.get(first.id)!.container.visible = true;
+                selectedCtxRef.current = first.id;
+                gamesRef.current.get(first.id)?.onContextEnter?.();
+            }
 
             // Single ticker: update all games, render handled by PIXI automatically
             app.ticker.add((ticker) => {
@@ -108,45 +112,48 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
 
     // Key handler — synchronous ref reads, no stale closures
     useEffect(() => {
-        const ARROWS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+        const ctxKeys = new Set(config.contexts.map((c) => String(c.id)));
 
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") { endSession(); return; }
 
-            if (ARROWS.has(e.key)) {
-                e.preventDefault();
-                const selId = selectedCtxRef.current;
-                if (selId !== null) gamesRef.current.get(selId)?.arrowKey?.(e.key);
+            const isCtxKey = ctxKeys.has(e.key);
+
+            if (isCtxKey) {
+                const ctx = config.contexts.find((c) => e.key === String(c.id));
+                if (!ctx) return;
+                const curId = selectedCtxRef.current;
+
+                if (curId === ctx.id) {
+                    // Own key while already entered — forward to the game
+                    const game = gamesRef.current.get(ctx.id);
+                    if (game && !game.dead) game.onKey?.(e.key);
+                } else {
+                    // Switch context: exit old, enter new
+                    if (curId !== null) {
+                        gamesRef.current.get(curId)?.onContextExit?.();
+                    }
+                    selectedCtxRef.current = ctx.id;
+                    const game = gamesRef.current.get(ctx.id);
+                    if (game && !game.dead) game.onContextEnter?.();
+                }
                 return;
             }
 
-            const ctx = config.contexts.find((c) => e.key === String(c.id));
-            if (!ctx) return;
-            const game = gamesRef.current.get(ctx.id);
-            if (!game) return;
-
-            if (game.inputMode === 'selection') {
-                selectedCtxRef.current = ctx.id;
-            } else {
-                game.triggerAction();
-            }
-        };
-
-        const onKeyUp = (e: KeyboardEvent) => {
-            const ctx = config.contexts.find((c) => e.key === String(c.id));
-            if (!ctx) return;
-            const game = gamesRef.current.get(ctx.id);
-            if (game?.inputMode === 'selection' && selectedCtxRef.current === ctx.id) {
+            // Non-context key → forward to selected game
+            const selId = selectedCtxRef.current;
+            if (selId === null) return;
+            const selGame = gamesRef.current.get(selId);
+            if (!selGame || selGame.dead) {
                 selectedCtxRef.current = null;
+                return;
             }
+            e.preventDefault();
+            selGame.onKey?.(e.key);
         };
 
         window.addEventListener("keydown", onKeyDown);
-        window.addEventListener("keyup", onKeyUp);
-        return () => {
-            window.removeEventListener("keydown", onKeyDown);
-            window.removeEventListener("keyup", onKeyUp);
-        };
+        return () => window.removeEventListener("keydown", onKeyDown);
     }, [endSession, config.contexts]);
 
     // Context switching — updates ref + React state + PIXI visibility in one shot

@@ -40,7 +40,7 @@ export function createDinoGame(
   scoreText.anchor.set(1, 0);
 
   const hintText = new Text({
-    text: `[${controlKey}] jump`,
+    text: `press [${controlKey}] jump`,
     style: { fontFamily: 'monospace', fontSize: 13, fill: colorNum },
   });
   hintText.alpha = 0.27;
@@ -102,10 +102,12 @@ export function createDinoGame(
     get score() { return s.score; },
     get dead() { return s.dead; },
 
-    inputMode: 'action' as const,
-
-    triggerAction() {
+    onContextEnter() {
       if (s.onGround && !s.dead) { s.vy = JUMP_VY; s.onGround = false; }
+    },
+
+    onKey(key: string) {
+      if (key === controlKey && s.onGround && !s.dead) { s.vy = JUMP_VY; s.onGround = false; }
     },
 
     update(dt, W, H) {

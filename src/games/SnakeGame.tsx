@@ -38,7 +38,7 @@ export function createSnakeGame(
     scoreText.anchor.set(1, 0);
 
     const hintText = new Text({
-        text: `hold [${controlKey}] + arrows`,
+        text: `[${controlKey}] select · arrows steer`,
         style: { fontFamily: "monospace", fontSize: 13, fill: colorNum },
     });
     hintText.alpha = 0.27;
@@ -219,7 +219,6 @@ export function createSnakeGame(
 
     return {
         container,
-        inputMode: "selection" as const,
         get score() {
             return score;
         },
@@ -227,11 +226,10 @@ export function createSnakeGame(
             return dead;
         },
 
-        triggerAction() {
-            /* direction controlled via arrowKey */
-        },
+        onContextEnter() { /* steering is always active; enter is just a selection signal */ },
+        onContextExit() { /* nothing to clean up */ },
 
-        arrowKey(key: string) {
+        onKey(key: string) {
             if (dead) return;
             if (key === "ArrowUp" && dir !== "down") nextDir = "up";
             if (key === "ArrowDown" && dir !== "up") nextDir = "down";

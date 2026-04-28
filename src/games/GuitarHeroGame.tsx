@@ -33,7 +33,7 @@ interface State {
 }
 
 export function createGuitarHeroGame(
-    _controlKey: string,
+    controlKey: string,
     baseColor: string,
     onGameOver: (score: number) => void,
 ): GameInstance {
@@ -187,6 +187,31 @@ export function createGuitarHeroGame(
         }
     }
 
+    function hitNote() {
+        const H = s.lastH;
+        const W = lastW;
+        const { hitZoneTop, hitZoneBot } = trackDims(W, H);
+        const note = s.notes.find(
+            (n) =>
+                !n.hit &&
+                !n.missed &&
+                n.y + NOTE_H >= hitZoneTop &&
+                n.y <= hitZoneBot,
+        );
+        if (note) {
+            note.hit = true;
+            note.hitY = note.y;
+            note.hitAge = 0;
+            s.combo++;
+            s.score += 10 * Math.min(s.combo, 8);
+            s.hitFlash = 14;
+            spawnHitParticle(W, H);
+        } else {
+            s.combo = 0;
+            s.missFlash = 10;
+        }
+    }
+
     return {
         container,
         get score() {
@@ -196,32 +221,8 @@ export function createGuitarHeroGame(
             return s.dead;
         },
 
-        inputMode: 'action' as const,
-
-        triggerAction() {
-            const H = s.lastH;
-            const W = lastW;
-            const { hitZoneTop, hitZoneBot } = trackDims(W, H);
-            const note = s.notes.find(
-                (n) =>
-                    !n.hit &&
-                    !n.missed &&
-                    n.y + NOTE_H >= hitZoneTop &&
-                    n.y <= hitZoneBot,
-            );
-            if (note) {
-                note.hit = true;
-                note.hitY = note.y;
-                note.hitAge = 0;
-                s.combo++;
-                s.score += 10 * Math.min(s.combo, 8);
-                s.hitFlash = 14;
-                spawnHitParticle(W, H);
-            } else {
-                s.combo = 0;
-                s.missFlash = 10;
-            }
-        },
+        onContextEnter() { hitNote(); },
+        onKey(key: string) { if (key === controlKey) hitNote(); },
 
         update(dt, W, H) {
             if (W !== lastW || H !== lastH) onResize(W, H);

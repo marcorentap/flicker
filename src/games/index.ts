@@ -3,13 +3,14 @@ import type { GameType } from '../types';
 import { createDinoGame } from './DinoGame';
 import { createGuitarHeroGame } from './GuitarHeroGame';
 import { createSnakeGame } from './SnakeGame';
+import { createTypingGame } from './TypingGame';
 
 export interface GameInstance {
   container: Container;
   update(dt: number, W: number, H: number): void;
-  triggerAction(): void;
-  arrowKey?(key: string): void;
-  readonly inputMode: 'action' | 'selection';
+  onContextEnter?(): void;
+  onContextExit?(): void;
+  onKey?(key: string): void;
   readonly score: number;
   readonly dead: boolean;
 }
@@ -24,10 +25,12 @@ export const GAME_NAMES: Record<GameType, string> = {
   dino: 'Dino Runner',
   'guitar-hero': 'Guitar Hero',
   snake: 'Snake',
+  typing: 'Z-Type',
 };
 
 export const GAME_FACTORIES: Record<GameType, GameFactory> = {
   dino: createDinoGame,
   'guitar-hero': createGuitarHeroGame,
   snake: createSnakeGame,
+  typing: createTypingGame,
 };

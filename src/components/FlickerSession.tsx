@@ -79,12 +79,11 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
                 gamesRef.current.set(ctxId, game);
             });
 
-            // Show first context and auto-enter it
+            // Show first context and silently pre-select it (no onContextEnter — avoids triggering actions on start)
             const first = config.contexts[activeIdxRef.current];
             if (first) {
                 gamesRef.current.get(first.id)!.container.visible = true;
                 selectedCtxRef.current = first.id;
-                gamesRef.current.get(first.id)?.onContextEnter?.();
             }
 
             // Single ticker: update all games, render handled by PIXI automatically

@@ -14,6 +14,7 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
     const [activeIdx, setActiveIdx] = useState(0);
     const [deadIds, setDeadIds] = useState<Set<number>>(new Set());
     const [displayScores, setDisplayScores] = useState<Record<number, number>>({});
+    const [frequencyHz, setFrequencyHz] = useState(config.settings.frequencyHz);
 
     // Kept as refs — updated synchronously in the interval, no React cycle in the hot path
     const activeIdxRef = useRef(0);
@@ -158,7 +159,7 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
 
     // Context switching — updates ref + React state + PIXI visibility in one shot
     useEffect(() => {
-        const ms = 1000 / config.settings.frequencyHz;
+        const ms = 1000 / frequencyHz;
         const interval = setInterval(() => {
             const alive = config.contexts
                 .map((c, i) => ({ c, i }))
@@ -182,7 +183,7 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
             }
         }, ms);
         return () => clearInterval(interval);
-    }, [config.settings.frequencyHz, config.settings.mode, config.contexts, endSession]);
+    }, [frequencyHz, config.settings.mode, config.contexts, endSession]);
 
     // Score display poll (UI only, not in hot path)
     useEffect(() => {
@@ -248,8 +249,19 @@ export function FlickerSession({ config, onSessionEnd }: Props) {
                 })}
 
                 <div style={{ flex: 1 }} />
-                <div style={{ color: "#888", fontSize: 11, letterSpacing: 2, fontWeight: "bold" }}>
-                    {config.settings.frequencyHz}Hz · {config.settings.mode}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                        type="range" min={1} max={60} step={1}
+                        value={frequencyHz}
+                        onChange={(e) => setFrequencyHz(Number(e.target.value))}
+                        style={{ width: 120, accentColor: "#888", cursor: "pointer" }}
+                    />
+                    <span style={{ color: "#aaa", fontSize: 11, letterSpacing: 2, fontWeight: "bold", minWidth: 38 }}>
+                        {frequencyHz}Hz
+                    </span>
+                    <span style={{ color: "#555", fontSize: 11, letterSpacing: 1 }}>
+                        {config.settings.mode}
+                    </span>
                 </div>
                 <button
                     onClick={endSession}
